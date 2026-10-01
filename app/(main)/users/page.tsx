@@ -182,88 +182,89 @@ export default function UsersPage() {
     const renderUserRow = (user: any, isChild: boolean = false, expandProps?: { hasChildren: boolean, isExpanded: boolean, onToggle: () => void }) => (
         <tr
             key={user.id}
-            className={`hover:bg-[#dad7cd]/40 transition-colors group ${expandProps?.hasChildren ? 'cursor-pointer' : ''}`}
+            className={`hover:bg-muted/40 transition-colors group ${expandProps?.hasChildren ? 'cursor-pointer' : ''}`}
             onClick={expandProps?.hasChildren ? expandProps.onToggle : undefined}
         >
-            <td className="px-10 py-5">
-                <div className={`flex items-center ${isChild ? 'ml-12 relative' : ''}`}>
+            <td className="px-6 py-4">
+                <div className={`flex items-center ${isChild ? 'ml-10 relative' : ''}`}>
                     {isChild && (
-                        <div className="absolute -left-8 top-1/2 w-6 h-px bg-slate-200" />
+                        <div className="absolute -left-6 top-1/2 w-5 h-px bg-border" />
                     )}
                     {expandProps && (
-                        <div className="mr-4 -ml-2 text-slate-400">
+                        <div className="mr-3 -ml-2 text-muted-foreground">
                             {expandProps.hasChildren ? (
-                                expandProps.isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />
+                                expandProps.isExpanded ? <ChevronDown className="h-4 w-4" aria-hidden="true" /> : <ChevronRight className="h-4 w-4" aria-hidden="true" />
                             ) : (
                                 <div className="w-4 h-4" />
                             )}
                         </div>
                     )}
-                    <div className="flex items-center gap-5">
-                        <div className="h-14 w-14 flex-shrink-0 rounded-[1.25rem] bg-slate-100 flex items-center justify-center text-slate-400 font-black group-hover:bg-gradient-to-br group-hover:from-[#344e41] group-hover:to-[#588157] group-hover:text-white group-hover:shadow-lg group-hover:shadow-[#3a5a40]/20 transition-all duration-300 transform group-hover:-translate-y-0.5">
-                            <User className="h-6 w-6" strokeWidth={2.5} />
+                    <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 flex-shrink-0 rounded-lg bg-muted flex items-center justify-center text-muted-foreground group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                            <User className="h-5 w-5" strokeWidth={2} aria-hidden="true" />
                         </div>
                         <div>
-                            <p className="font-bold text-slate-900 tracking-tight text-[15px]">{user.name}</p>
-                            <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1 font-medium bg-slate-100/50 w-fit px-2.5 py-1 rounded-md">
-                                <Mail className="h-3 w-3" />
+                            <p className="font-medium text-foreground text-sm">{user.name}</p>
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground mt-0.5">
+                                <Mail className="h-3 w-3" aria-hidden="true" />
                                 {user.email}
                             </div>
                         </div>
                     </div>
                 </div>
             </td>
-            <td className="px-6 py-5">
-                <div className="flex items-center gap-2 font-bold text-xs uppercase tracking-widest text-slate-700">
-                    <Shield className={`h-4 w-4 ${user.role === "ADMIN" ? "text-[#344e41]" : "text-[#3a5a40]"}`} strokeWidth={2.5} />
+            <td className="px-4 py-4">
+                <div className="flex items-center gap-2 text-xs font-medium text-foreground">
+                    <Shield className="h-3.5 w-3.5 text-muted-foreground" strokeWidth={2} aria-hidden="true" />
                     {user.role.replace('_', ' ')}
                 </div>
             </td>
-            <td className="px-6 py-5">
+            <td className="px-4 py-4">
                 <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-slate-400" />
-                    <span className="font-bold text-xs text-slate-600 uppercase tracking-wider">
+                    <Building2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
+                    <span className="text-xs font-medium text-muted-foreground">
                         {user.department?.name || "Global / IT"}
                     </span>
                 </div>
             </td>
-            <td className="px-6 py-5">
-                <div className="flex items-center gap-2.5">
-                    <div className="relative flex h-3 w-3">
-                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-20"></span>
-                        <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 border-2 border-white shadow-sm"></span>
-                    </div>
-                    <span className="text-xs font-black text-slate-700 uppercase tracking-widest">Active</span>
+            <td className="px-4 py-4">
+                <div className="flex items-center gap-2">
+                    <span className="relative flex h-2 w-2">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-30" />
+                        <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
+                    </span>
+                    <span className="text-xs font-medium text-muted-foreground">Active</span>
                 </div>
             </td>
             {(session?.user?.role === "DEAN" || session?.user?.role === "HOD") && (
-                <td className="px-10 py-5 text-right relative" onClick={(e) => e.stopPropagation()}>
+                <td className="px-6 py-4 text-right relative" onClick={(e) => e.stopPropagation()}>
                     <button
                         onClick={() => setShowOptionsId(showOptionsId === user.id ? null : user.id)}
-                        className="p-3 bg-slate-50 hover:bg-white rounded-xl border border-transparent hover:border-slate-200 hover:shadow-md transition-all duration-200"
+                        aria-label={`Options for ${user.name}`}
+                        className="p-2 bg-muted hover:bg-background rounded-lg border border-border hover:shadow-sm transition-all"
                     >
-                        <MoreVertical className="h-5 w-5 text-slate-400" />
+                        <MoreVertical className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     </button>
                     {showOptionsId === user.id && (
-                        <div className="absolute right-12 top-14 w-56 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-slate-100 z-20 overflow-hidden transform animate-in fade-in slide-in-from-top-2 text-left">
-                            <div className="px-4 py-3 bg-slate-50/50 border-b border-slate-100 flex items-center gap-2">
-                                <ShieldAlert className="w-4 h-4 text-slate-400" />
-                                <span className="text-[10px] font-black uppercase tracking-widest text-slate-500">Admin Actions</span>
+                        <div className="absolute right-8 top-12 w-52 bg-card rounded-xl shadow-md border border-border z-20 overflow-hidden">
+                            <div className="px-4 py-2.5 bg-muted/50 border-b border-border flex items-center gap-2">
+                                <ShieldAlert className="w-3.5 h-3.5 text-muted-foreground" aria-hidden="true" />
+                                <span className="text-xs font-medium text-muted-foreground">Admin Actions</span>
                             </div>
                             <button
                                 onClick={() => handleResetPassword(user.id)}
                                 disabled={resettingId === user.id}
-                                className="w-full text-left px-5 py-3.5 text-slate-700 hover:bg-[#dad7cd]/40 hover:text-[#3a5a40] text-xs font-bold uppercase tracking-widest flex items-center gap-3 transition-colors border-b border-slate-50"
+                                className="w-full text-left px-4 py-3 text-foreground hover:bg-muted text-xs font-medium flex items-center gap-3 transition-colors border-b border-border"
                             >
-                                {resettingId === user.id ? <Loader2 className="h-4 w-4 animate-spin text-[#3a5a40]" /> : <Key className="h-4 w-4 text-[#3a5a40]" />}
+                                {resettingId === user.id ? <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" aria-hidden="true" /> : <Key className="h-3.5 w-3.5 text-primary" aria-hidden="true" />}
                                 Reset Password
                             </button>
                             <button
                                 onClick={() => handleDeleteUser(user.id)}
                                 disabled={deletingId === user.id}
-                                className="w-full text-left px-5 py-3.5 text-red-600 hover:bg-red-50 text-xs font-bold uppercase tracking-widest flex items-center gap-3 transition-colors"
+                                className="w-full text-left px-4 py-3 text-destructive hover:bg-destructive/5 text-xs font-medium flex items-center gap-3 transition-colors"
                             >
-                                {deletingId === user.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
+                                {deletingId === user.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" /> : <Trash2 className="h-3.5 w-3.5" aria-hidden="true" />}
                                 Delete Account
                             </button>
                         </div>
@@ -274,52 +275,49 @@ export default function UsersPage() {
     );
 
     return (
-        <div className="p-6 lg:p-10 space-y-8 min-h-[calc(100vh-2rem)] bg-slate-50/50">
-            {/* Header Section */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-8 rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 relative overflow-hidden">
-                <div className="absolute right-0 top-0 w-[500px] h-[500px] bg-gradient-to-br from-[#dad7cd]/40 to-[#a3b18a]/20 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 opacity-70 pointer-events-none" />
-
-                <div className="relative z-10">
-                    <div className="flex items-center gap-3 mb-2">
-                        <div className="h-8 w-8 rounded-full bg-[#dad7cd]/60 flex items-center justify-center">
-                            <Briefcase className="h-4 w-4 text-[#3a5a40]" />
-                        </div>
-                        <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+        <div className="p-6 lg:p-10 space-y-6 min-h-[calc(100vh-2rem)] bg-background">
+            {/* Page Header */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/10 rounded-lg">
+                        <Briefcase className="h-5 w-5 text-primary" aria-hidden="true" />
+                    </div>
+                    <div>
+                        <h1 className="text-2xl font-semibold text-foreground tracking-tight">
                             {session?.user?.role === "HOD" ? "Lab Incharges" :
                                 session?.user?.role === "ADMIN" ? "Department Heads & Lab Incharges" :
                                     "Department Heads"}
                         </h1>
+                        <p className="text-sm text-muted-foreground mt-0.5">
+                            {session?.user?.role === "HOD"
+                                ? "Directory of departmental laboratory leadership"
+                                : session?.user?.role === "ADMIN"
+                                    ? "Directory of institutional department leadership and lab incharges"
+                                    : "Directory of institutional department leadership"}
+                        </p>
                     </div>
-                    <p className="text-slate-500 font-medium ml-11">
-                        {session?.user?.role === "HOD"
-                            ? "Directory of departmental laboratory leadership"
-                            : session?.user?.role === "ADMIN"
-                                ? "Directory of institutional department leadership and lab incharges"
-                                : "Directory of institutional department leadership"}
-                    </p>
                 </div>
 
-                <div className="relative z-10">
-                    {(session?.user?.role === "DEAN" || session?.user?.role === "HOD") && (
-                        <button
-                            onClick={() => setIsAddModalOpen(true)}
-                            className="flex items-center gap-3 px-6 py-3.5 bg-gradient-to-r from-[#344e41] to-[#3a5a40] text-white font-bold text-[13px] tracking-widest uppercase rounded-2xl hover:shadow-lg hover:shadow-[#344e41]/30 hover:-translate-y-0.5 transition-all duration-300"
-                        >
-                            <Plus className="h-4 w-4" strokeWidth={3} />
-                            REGISTER NEW
-                        </button>
-                    )}
-                </div>
+                {(session?.user?.role === "DEAN" || session?.user?.role === "HOD") && (
+                    <button
+                        onClick={() => setIsAddModalOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 transition-colors shrink-0"
+                    >
+                        <Plus className="h-4 w-4" strokeWidth={2.5} aria-hidden="true" />
+                        Register New
+                    </button>
+                )}
             </div>
 
-            {/* Advanced Search Bar */}
-            <div className="bg-white p-3 rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.02)] border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div className="relative w-full md:w-96 pl-2">
-                    <Search className="absolute left-6 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            {/* Search Bar */}
+            <div className="bg-card border border-border rounded-xl p-3 shadow-sm">
+                <div className="relative w-full sm:w-80">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     <input
                         type="text"
-                        placeholder="Search by name or email address..."
-                        className="w-full pl-12 pr-4 py-3 bg-slate-50/50 border-none rounded-xl text-sm focus:ring-2 focus:ring-[#588157]/20 focus:bg-[#dad7cd]/10 transition-all font-medium placeholder:text-slate-400 text-slate-900 outline-none"
+                        placeholder="Search by name or email..."
+                        aria-label="Search users"
+                        className="w-full pl-9 pr-4 py-2.5 bg-muted border-none rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all text-foreground placeholder:text-muted-foreground"
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
                     />
@@ -327,28 +325,27 @@ export default function UsersPage() {
             </div>
 
             {/* Directory Table */}
-            <div className="bg-white rounded-[2rem] shadow-[0_8px_30px_rgb(0,0,0,0.03)] border border-slate-100 overflow-hidden relative">
+            <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
                 {loading ? (
-                    <div className="p-32 flex flex-col items-center justify-center text-slate-400">
-                        <div className="relative mb-6">
-                            <div className="absolute inset-0 bg-[#588157]/20 rounded-full blur-xl animate-pulse" />
-                            <Loader2 className="h-10 w-10 animate-spin text-[#3a5a40] relative z-10" />
-                        </div>
-                        <p className="font-bold text-sm uppercase tracking-widest text-[#3a5a40]/80">Accessing Secure Directory...</p>
+                    <div className="p-24 flex flex-col items-center justify-center text-muted-foreground gap-3">
+                        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+                        <p className="text-sm font-medium">Loading directory...</p>
                     </div>
                 ) : (
-                    <div className="overflow-x-auto pb-4">
+                    <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
-                                <tr className="bg-slate-50/80 border-b border-slate-100 font-black text-[10px] text-slate-400 uppercase tracking-[0.2em]">
-                                    <th className="px-10 py-6">User Information</th>
-                                    <th className="px-6 py-6">Role & Security</th>
-                                    <th className="px-6 py-6">Department</th>
-                                    <th className="px-6 py-6">Status Indicator</th>
-                                    <th className="px-10 py-6 text-right">Actions</th>
+                                <tr className="bg-muted/50 border-b border-border text-xs font-medium text-muted-foreground uppercase tracking-wide">
+                                    <th className="px-6 py-4">User Information</th>
+                                    <th className="px-4 py-4">Role</th>
+                                    <th className="px-4 py-4">Department</th>
+                                    <th className="px-4 py-4">Status</th>
+                                    {(session?.user?.role === "DEAN" || session?.user?.role === "HOD") && (
+                                        <th className="px-6 py-4 text-right">Actions</th>
+                                    )}
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-slate-50">
+                            <tbody className="divide-y divide-border">
                                 {session?.user?.role === "ADMIN" ? (
                                     adminGroups.map((group) => {
                                         const dId = group.departmentId;
@@ -386,24 +383,24 @@ export default function UsersPage() {
                 isOpen={isAddModalOpen}
                 onClose={() => setIsAddModalOpen(false)}
                 title="Register New Account"
-                className="max-w-md !rounded-[2rem]"
+                className="max-w-md"
             >
-                <form onSubmit={handleAddUser} className="space-y-5 p-2">
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Full Name</label>
-                        <input name="name" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-green-600/10 focus:border-green-600 transition-all outline-none font-medium placeholder:text-slate-400" placeholder="e.g. John Doe" />
+                <form onSubmit={handleAddUser} className="space-y-4">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Full Name</label>
+                        <input name="name" required className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground" placeholder="e.g. John Doe" />
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Email Address</label>
-                        <input name="email" type="email" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-green-600/10 focus:border-green-600 transition-all outline-none font-medium placeholder:text-slate-400" placeholder="user@example.com" />
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Email Address</label>
+                        <input name="email" type="email" required className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground" placeholder="user@example.com" />
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Security Password</label>
-                        <input name="password" type="password" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-green-600/10 focus:border-green-600 transition-all outline-none font-medium placeholder:text-slate-400" placeholder="••••••••" />
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Password</label>
+                        <input name="password" type="password" required className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all placeholder:text-muted-foreground" placeholder="••••••••" />
                     </div>
-                    <div className="space-y-2">
-                        <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Permission Role</label>
-                        <select name="role" required className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-green-600/10 focus:border-green-600 transition-all outline-none font-medium text-slate-700">
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Permission Role</label>
+                        <select name="role" required className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all text-foreground">
                             {session?.user?.role === "DEAN" ? (
                                 <>
                                     <option value="ADMIN">System Admin</option>
@@ -419,9 +416,9 @@ export default function UsersPage() {
                         </select>
                     </div>
                     {session?.user?.role === "DEAN" && (
-                        <div className="space-y-2">
-                            <label className="text-[11px] font-black uppercase tracking-widest text-slate-500 ml-1">Department Override</label>
-                            <select name="departmentId" className="w-full px-5 py-4 bg-slate-50 border border-slate-100 rounded-2xl text-sm focus:ring-4 focus:ring-green-600/10 focus:border-green-600 transition-all outline-none font-medium text-slate-700">
+                        <div className="space-y-1.5">
+                            <label className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Department</label>
+                            <select name="departmentId" className="w-full px-4 py-3 bg-muted border border-border rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-ring transition-all text-foreground">
                                 <option value="">No Department (Global)</option>
                                 {departments.map(d => <option key={d.id} value={d.id}>{d.name}</option>)}
                             </select>
@@ -430,13 +427,13 @@ export default function UsersPage() {
                     {session?.user?.role === "HOD" && (
                         <input type="hidden" name="departmentId" value={session.user.departmentId || ""} />
                     )}
-                    <div className="pt-4">
+                    <div className="pt-2">
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className="w-full py-4 bg-gradient-to-r from-[#344e41] to-[#3a5a40] text-white font-black rounded-2xl shadow-lg shadow-[#344e41]/20 hover:shadow-xl hover:shadow-[#344e41]/30 transition-all flex items-center justify-center gap-2 uppercase tracking-widest text-xs hover:-translate-y-0.5"
+                            className="w-full py-3 bg-primary text-primary-foreground text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 flex items-center justify-center gap-2 transition-colors"
                         >
-                            {isSubmitting ? <Loader2 className="h-5 w-5 animate-spin" /> : "CREATE ACCESS ACCOUNT"}
+                            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" /> : "Create Account"}
                         </button>
                     </div>
                 </form>

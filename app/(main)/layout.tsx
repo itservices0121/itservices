@@ -7,9 +7,9 @@ export default function MainLayout({
     children: React.ReactNode;
 }) {
     return (
-        <div className="flex min-h-screen bg-slate-50/50">
+        <div className="flex min-h-screen bg-background">
             <Sidebar />
-            <div className="flex flex-1 flex-col pl-72 transition-all duration-300 ease-in-out">
+            <div className="flex flex-1 flex-col pl-64 transition-all duration-300 ease-in-out">
                 <Header />
                 <main className="flex-1 overflow-y-auto">
                     {children}
@@ -18,3 +18,4 @@ export default function MainLayout({
         </div>
     );
 }
+

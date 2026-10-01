@@ -1,4 +1,4 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
@@ -77,8 +77,14 @@
 
   html,
   body {
-    background-color: #fdfbf7;
+    background-color: hsl(var(--background));
     min-height: 100vh;
+  }
+
+  /* Visible keyboard focus for all interactive elements */
+  :focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
   }
 
   body {
@@ -95,8 +101,8 @@
 
 /* Radio Sidebar Theme */
 .radio-container {
-  --main-color: #f7e479;
-  --main-color-opacity: #f7e4791c;
+  --main-color: hsl(var(--primary));
+  --main-color-opacity: hsl(var(--primary) / 0.12);
 
   /* change this according inputs count */
   --total-radio: 4;
@@ -255,9 +261,9 @@
   left: 0;
   width: 40px;
   height: 40px;
-  background: #f7e479;
+  background: hsl(var(--primary));
   border-radius: 50%;
-  box-shadow: 0 0 30px #f7e479;
+  box-shadow: 0 0 30px hsl(var(--primary) / 0.5);
   animation: liquid-animate 4s ease-in-out infinite;
   animation-delay: calc(var(--i) * -1s);
 }
@@ -287,4 +293,16 @@
   visibility: hidden;
   width: 0;
   height: 0;
+}
+
+/* Accessibility: respect user motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

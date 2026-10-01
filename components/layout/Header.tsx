@@ -5,16 +5,13 @@ import {
     Bell,
     Search,
     ChevronDown,
-    Monitor,
     Clock,
     User as UserIcon,
-    ArrowRight,
     Settings,
     LogOut
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState, useRef } from "react";
-import { cn } from "@/lib/utils";
 import { Branding } from "@/components/Branding";
 
 export function Header() {
@@ -84,16 +81,11 @@ export function Header() {
         }
     };
 
-    const isDean = session?.user?.role === "DEAN";
-    const accentColor = isDean ? "#3b82f6" : "#10b981";
-    const accentLight = isDean ? "#dbeafe" : "#f0fdf4";
-    const accentHighlight = isDean ? "#10b981" : "#34d399";
-
-    if (!mounted) return <header className="sticky top-0 z-30 h-24 bg-white/80 border-b border-slate-100" />;
+    if (!mounted) return <header className="sticky top-0 z-30 h-16 bg-card/80 border-b border-border" />;
 
     return (
-        <header className="sticky top-0 z-30 h-24 bg-white/80 backdrop-blur-md border-b border-slate-100 px-10 flex items-center justify-between">
-            <div className="flex items-center gap-12">
+        <header className="sticky top-0 z-30 h-16 bg-card/80 backdrop-blur-md border-b border-border px-6 flex items-center justify-between">
+            <div className="flex items-center gap-8">
                 <Branding
                     text="VIGNAN INSTITUTE"
                     image="/vignan-logo-custom.svg"
@@ -103,64 +95,64 @@ export function Header() {
 
                 {/* Search */}
                 <div className="relative hidden lg:block">
-                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate-300" />
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" aria-hidden="true" />
                     <input
                         type="text"
                         placeholder="Search resources..."
-                        className="pl-12 pr-6 py-3.5 bg-slate-50 border-none rounded-3xl text-sm w-[340px] focus:ring-2 transition-all shadow-inner"
-                        style={{ "--tw-ring-color": accentColor } as any}
+                        aria-label="Search resources"
+                        className="pl-9 pr-5 py-2.5 bg-muted border border-border rounded-lg text-sm w-72 focus:outline-none focus:ring-2 focus:ring-ring transition-all"
                     />
                 </div>
             </div>
 
-            <div className="flex items-center gap-6">
-                {/* Action Icons */}
-                <div className="flex items-center gap-2 relative" ref={dropdownRef}>
+            <div className="flex items-center gap-4">
+                {/* Notifications */}
+                <div className="relative" ref={dropdownRef}>
                     <button
                         onClick={() => {
                             setShowNotifications(!showNotifications);
                             if (!showNotifications) markAsRead();
                         }}
-                        className="p-3 hover:bg-slate-50 rounded-2xl transition-colors relative"
+                        aria-label="View notifications"
+                        className="p-2 hover:bg-muted rounded-lg transition-colors relative"
                     >
-                        <Bell className="h-5 w-5 text-slate-400" />
+                        <Bell className="h-5 w-5 text-muted-foreground" aria-hidden="true" />
                         {hasUnread && (
-                            <span className="absolute top-3.5 right-3.5 h-2 w-2 rounded-full border-2 border-white animate-pulse" style={{ backgroundColor: accentHighlight }} />
+                            <span className="absolute top-2 right-2 h-2 w-2 rounded-full bg-primary border-2 border-card animate-pulse" />
                         )}
                     </button>
 
                     {showNotifications && (
-                        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-[32px] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in zoom-in-95 duration-200 z-50">
-                            <div className="p-6 border-b border-slate-50 bg-slate-50/50 flex items-center justify-between">
-                                <h3 className="text-[10px] font-black text-slate-900 uppercase tracking-widest">System Alerts</h3>
+                        <div className="absolute right-0 top-full mt-2 w-80 bg-card rounded-xl shadow-md border border-border overflow-hidden z-50">
+                            <div className="px-5 py-3.5 border-b border-border bg-muted/30 flex items-center justify-between">
+                                <h3 className="text-xs font-semibold text-foreground uppercase tracking-wide">System Alerts</h3>
                                 <Link
                                     href="/notifications"
                                     onClick={() => setShowNotifications(false)}
-                                    className="text-[9px] font-black uppercase tracking-widest hover:underline"
-                                    style={{ color: accentColor }}
+                                    className="text-xs font-medium text-primary hover:underline"
                                 >
                                     View History
                                 </Link>
                             </div>
-                            <div className="max-h-96 overflow-y-auto divide-y divide-slate-50">
+                            <div className="max-h-80 overflow-y-auto divide-y divide-border">
                                 {activities.length > 0 ? (
                                     activities.map((act) => (
                                         <Link
                                             key={act.id}
                                             href="/notifications"
                                             onClick={() => setShowNotifications(false)}
-                                            className="block p-5 hover:bg-slate-50 transition-colors"
+                                            className="block p-4 hover:bg-muted/40 transition-colors"
                                         >
-                                            <div className="flex gap-4">
-                                                <div className="h-8 w-8 rounded-xl flex items-center justify-center flex-shrink-0" style={{ backgroundColor: accentLight }}>
-                                                    <Bell className="h-4 w-4" style={{ color: accentColor }} />
+                                            <div className="flex gap-3">
+                                                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                                    <Bell className="h-3.5 w-3.5 text-primary" aria-hidden="true" />
                                                 </div>
-                                                <div className="space-y-1">
-                                                    <p className="text-[10px] font-black text-slate-900 uppercase leading-tight line-clamp-1">{act.entity}</p>
-                                                    <p className="text-[9px] text-slate-500 font-medium italic line-clamp-2 leading-relaxed">{act.details}</p>
-                                                    <div className="flex items-center gap-2 mt-2">
-                                                        <Clock className="h-3 w-3 text-slate-300" />
-                                                        <span className="text-[8px] font-bold text-slate-400 uppercase tracking-widest">
+                                                <div className="space-y-0.5">
+                                                    <p className="text-xs font-medium text-foreground line-clamp-1">{act.entity}</p>
+                                                    <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{act.details}</p>
+                                                    <div className="flex items-center gap-1.5 mt-1">
+                                                        <Clock className="h-3 w-3 text-muted-foreground" aria-hidden="true" />
+                                                        <span className="text-xs text-muted-foreground">
                                                             {new Date(act.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </span>
                                                     </div>
@@ -169,78 +161,71 @@ export function Header() {
                                         </Link>
                                     ))
                                 ) : (
-                                    <div className="p-10 text-center">
-                                        <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Awaiting Events</p>
+                                    <div className="p-8 text-center">
+                                        <p className="text-sm text-muted-foreground">No recent activity</p>
                                     </div>
                                 )}
                             </div>
                             <Link
                                 href="/notifications"
                                 onClick={() => setShowNotifications(false)}
-                                className="block py-4 text-white text-center text-[9px] font-black uppercase tracking-[0.2em] transition-colors"
-                                style={{ backgroundColor: accentColor }}
+                                className="block py-3 bg-primary text-primary-foreground text-center text-xs font-medium transition-colors hover:bg-primary/90"
                             >
-                                Enter System Pulse
+                                View All Activity
                             </Link>
                         </div>
                     )}
-
-                    {/* Redacted Globe Icon */}
                 </div>
 
                 {/* User Profile */}
-                <div className="flex items-center gap-3 pl-4 border-l border-slate-100 relative" ref={profileRef}>
-                    <div className="flex items-center gap-4">
-                        <div className="text-right">
-                            <p className="text-[10px] font-black text-slate-900 uppercase tracking-tight">{session?.user?.name || "User"}</p>
-                            <p className="text-[9px] font-bold uppercase tracking-widest" style={{ color: accentColor }}>{session?.user?.role || "Member"}</p>
+                <div className="flex items-center gap-3 pl-4 border-l border-border relative" ref={profileRef}>
+                    <div className="flex items-center gap-3">
+                        <div className="text-right hidden sm:block">
+                            <p className="text-xs font-medium text-foreground">{session?.user?.name || "User"}</p>
+                            <p className="text-xs text-primary">{session?.user?.role || "Member"}</p>
                         </div>
-                        <div className="h-10 w-10 rounded-2xl bg-slate-900 shadow-lg shadow-slate-200 overflow-hidden flex items-center justify-center">
+                        <div className="h-8 w-8 rounded-lg bg-foreground overflow-hidden flex items-center justify-center">
                             {session?.user?.image ? (
-                                <img src={session.user.image} alt="User Avatar" className="h-full w-full object-cover" />
+                                <img src={session.user.image} alt="User avatar" className="h-full w-full object-cover" />
                             ) : (
-                                <UserIcon className="h-5 w-5 text-white" />
+                                <UserIcon className="h-4 w-4 text-background" aria-hidden="true" />
                             )}
                         </div>
                         <button
-                            onClick={() => {
-                                setShowProfileMenu(!showProfileMenu);
-                            }}
-                            className={cn(
-                                "h-10 w-10 rounded-2xl flex items-center justify-center transition-all",
-                                showProfileMenu ? "rotate-180 bg-green-600 text-white" : "bg-slate-50 text-slate-400 hover:bg-slate-100"
-                            )}
-                            style={showProfileMenu ? { backgroundColor: accentColor } : {}}
+                            onClick={() => setShowProfileMenu(!showProfileMenu)}
+                            aria-label="Open profile menu"
+                            aria-expanded={showProfileMenu}
+                            className={`h-8 w-8 rounded-lg flex items-center justify-center transition-colors ${showProfileMenu ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground hover:bg-muted/80"}`}
                         >
-                            <ChevronDown className="h-4 w-4" />
+                            <ChevronDown className={`h-4 w-4 transition-transform ${showProfileMenu ? "rotate-180" : ""}`} aria-hidden="true" />
                         </button>
                     </div>
 
                     {showProfileMenu && (
-                        <div className="absolute right-0 top-full mt-4 w-56 bg-white rounded-[24px] shadow-2xl border border-slate-100 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200 z-50">
-                            <div className="p-4 border-b border-slate-50 bg-slate-50/50">
-                                <p className="text-[8px] font-black text-slate-400 uppercase tracking-widest">Authenticated User</p>
-                                <p className="text-[11px] font-black text-slate-900 line-clamp-1">{session?.user?.email}</p>
+                        <div className="absolute right-0 top-full mt-3 w-52 bg-card rounded-xl shadow-md border border-border overflow-hidden z-50">
+                            <div className="p-3.5 border-b border-border bg-muted/30">
+                                <p className="text-xs text-muted-foreground">Authenticated User</p>
+                                <p className="text-xs font-medium text-foreground line-clamp-1 mt-0.5">{session?.user?.email}</p>
                             </div>
-                            <div className="p-2">
+                            <div className="p-1.5">
                                 <Link
                                     href="/settings"
                                     onClick={() => setShowProfileMenu(false)}
-                                    className="flex items-center gap-3 px-4 py-3 hover:bg-slate-50 rounded-xl transition-colors group"
+                                    className="flex items-center gap-3 px-3 py-2.5 hover:bg-muted rounded-lg transition-colors group"
                                 >
-                                    <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-green-50 transition-colors">
-                                        <Settings className="h-3.5 w-3.5 text-slate-500 group-hover:text-green-600" />
+                                    <div className="p-1.5 bg-muted rounded-md group-hover:bg-card transition-colors">
+                                        <Settings className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary" aria-hidden="true" />
                                     </div>
-                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Settings</span>
+                                    <span className="text-xs font-medium text-foreground">Settings</span>
                                 </Link>
                                 <button
                                     onClick={() => signOut({ callbackUrl: "/login" })}
-                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 rounded-xl transition-colors group"
+                                    className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-destructive/5 rounded-lg transition-colors group"
                                 >
-                                    <div className="p-2 bg-slate-100 rounded-lg group-hover:bg-red-100 transition-colors">
-                                        <LogOut className="h-3.5 w-3.5 text-slate-500 group-hover:text-red-600" />
+                                    <div className="p-1.5 bg-muted rounded-md group-hover:bg-destructive/10 transition-colors">
+                                        <LogOut className="h-3.5 w-3.5 text-muted-foreground group-hover:text-destructive" aria-hidden="true" />
                                     </div>
-                                    <span className="text-[10px] font-black text-slate-900 uppercase tracking-widest">Sign Out</span>
+                                    <span className="text-xs font-medium text-foreground">Sign Out</span>
                                 </button>
                             </div>
                         </div>
