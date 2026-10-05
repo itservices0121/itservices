@@ -187,9 +187,11 @@ export async function GET(req: NextRequest) {
                 select: { labId: true, managedLab: { select: { id: true } } },
             });
 
-            const labId = user?.labId || user?.managedLab?.id;
+            const labIds = [];
+            if (user?.labId) labIds.push(user.labId);
+            if (user?.managedLab?.id) labIds.push(user.managedLab.id);
 
-            if (!labId) {
+            if (labIds.length === 0) {
                 return NextResponse.json({ error: "No lab assigned" }, { status: 400 });
             }
 
@@ -200,9 +202,9 @@ export async function GET(req: NextRequest) {
                 myTickets,
                 pendingTickets,
             ] = await Promise.all([
-                prisma.asset.count({ where: { labId: user.labId } }),
-                prisma.asset.count({ where: { labId: user.labId, status: "ACTIVE" } }),
-                prisma.asset.count({ where: { labId: user.labId, status: { not: "ACTIVE" } } }),
+                prisma.asset.count({ where: { labId: { in: labIds } } }),
+                prisma.asset.count({ where: { labId: { in: labIds }, status: "ACTIVE" } }),
+                prisma.asset.count({ where: { labId: { in: labIds }, status: { not: "ACTIVE" } } }),
                 prisma.ticket.count({ where: { createdById: userId } }),
                 prisma.ticket.count({ where: { createdById: userId, status: { in: ["SUBMITTED", "APPROVED"] } } }),
             ]);

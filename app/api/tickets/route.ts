@@ -16,10 +16,15 @@ export async function GET(req: NextRequest) {
         const role = session.user.role;
         const userId = session.user.id;
 
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { departmentId: true, labId: true, managedLab: { select: { id: true } } },
+        });
+
         let tickets;
 
-        if (role === "ADMIN") {
-            // Admin sees all tickets
+        if (role === "ADMIN" || role === "DEAN") {
+            // Admin and Dean see all tickets
             tickets = await prisma.ticket.findMany({
                 include: {
                     asset: {
@@ -40,9 +45,18 @@ export async function GET(req: NextRequest) {
                 },
             });
         } else if (role === "LAB_INCHARGE") {
-            // Lab Incharge sees only their tickets
+            // Lab Incharge sees their own + their lab's tickets
+            const labIds = [];
+            if (user?.labId) labIds.push(user.labId);
+            if (user?.managedLab?.id) labIds.push(user.managedLab.id);
+
             tickets = await prisma.ticket.findMany({
-                where: { createdById: userId },
+                where: {
+                    OR: [
+                        { createdById: userId },
+                        ...(labIds.length > 0 ? [{ labId: { in: labIds } }] : [])
+                    ]
+                },
                 include: {
                     asset: {
                         select: { assetNumber: true, name: true },
@@ -62,9 +76,9 @@ export async function GET(req: NextRequest) {
                 },
             });
         } else if (role === "HOD") {
-            // HOD sees only tickets they created
+            // HOD sees all tickets in their department
             tickets = await prisma.ticket.findMany({
-                where: { createdById: userId },
+                where: { departmentId: user?.departmentId || undefined },
                 include: {
                     asset: {
                         select: { assetNumber: true, name: true },
@@ -113,9 +127,11 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Generate ticket number
-        const count = await prisma.ticket.count();
-        const ticketNumber = `TKT-${new Date().getFullYear()}-${String(count + 1).padStart(4, "0")}`;
+        // Generate ticket number safely without collision
+        const randomStr = typeof crypto !== 'undefined' && crypto.randomUUID 
+            ? crypto.randomUUID().split('-')[0].toUpperCase() 
+            : Math.random().toString(36).substring(2, 8).toUpperCase();
+        const ticketNumber = `TKT-${new Date().getFullYear()}-${randomStr}`;
 
         const ticket = await prisma.ticket.create({
             data: {

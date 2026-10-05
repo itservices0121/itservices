@@ -115,9 +115,11 @@ export async function POST(req: NextRequest) {
             );
         }
 
-        // Generate request number
-        const count = await prisma.request.count();
-        const requestNumber = `REQ-${new Date().getFullYear()}-${String(count + 1).padStart(4, "0")}`;
+        // Generate request number safely without collision
+        const randomStr = typeof crypto !== 'undefined' && crypto.randomUUID 
+            ? crypto.randomUUID().split('-')[0].toUpperCase() 
+            : Math.random().toString(36).substring(2, 8).toUpperCase();
+        const requestNumber = `REQ-${new Date().getFullYear()}-${randomStr}`;
 
         const request = await prisma.request.create({
             data: {

@@ -506,6 +506,18 @@ export default function AdminDashboard() {
                 <RequestSparePartModal
                     isOpen={isRequestModalOpen}
                     onClose={() => setIsRequestModalOpen(false)}
+                    onSubmit={async (data) => {
+                        const res = await fetch("/api/inventory/requests", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify(data)
+                        });
+                        if (!res.ok) {
+                            const err = await res.json();
+                            throw new Error(err.error || "Failed to submit request");
+                        }
+                        await mutateInventoryReqs();
+                    }}
                 />
             </div>
         </div>

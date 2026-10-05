@@ -7,7 +7,16 @@ const prisma = new PrismaClient();
 async function main() {
     console.log("🌱 Starting database seed...");
 
-    const password = await hash("admin123", 10);
+    // Generate unique random passwords
+    const generatePassword = () => Math.random().toString(36).slice(-10);
+    const passwords = {
+        dean: generatePassword(),
+        admin: generatePassword(),
+        cseHod: generatePassword(),
+        eceHod: generatePassword(),
+        labIncharge1: generatePassword(),
+        labIncharge2: generatePassword(),
+    };
 
     // 1. Create Users
     console.log("Creating users...");
@@ -18,7 +27,7 @@ async function main() {
         create: {
             email: "dean@example.com",
             name: "Dr. Robert Dean",
-            password,
+            password: await hash(passwords.dean, 10),
             role: Role.DEAN,
         },
     });
@@ -29,7 +38,7 @@ async function main() {
         create: {
             email: "admin@example.com",
             name: "System Administrator",
-            password,
+            password: await hash(passwords.admin, 10),
             role: Role.ADMIN,
         },
     });
@@ -76,7 +85,7 @@ async function main() {
         create: {
             email: "hod@example.com",
             name: "Dr. Sarah Johnson",
-            password,
+            password: await hash(passwords.cseHod, 10),
             role: Role.HOD,
             departmentId: cseDept.id,
         },
@@ -88,7 +97,7 @@ async function main() {
         create: {
             email: "hod.ece@example.com",
             name: "Dr. Michael Chen",
-            password,
+            password: await hash(passwords.eceHod, 10),
             role: Role.HOD,
             departmentId: eceDept.id,
         },
@@ -153,7 +162,7 @@ async function main() {
         create: {
             email: "lab@example.com",
             name: "John Lab Tech",
-            password,
+            password: await hash(passwords.labIncharge1, 10),
             role: Role.LAB_INCHARGE,
             departmentId: cseDept.id,
             labId: cseLab1.id,
@@ -166,7 +175,7 @@ async function main() {
         create: {
             email: "lab.cse2@example.com",
             name: "Jane Smith",
-            password,
+            password: await hash(passwords.labIncharge2, 10),
             role: Role.LAB_INCHARGE,
             departmentId: cseDept.id,
             labId: cseLab2.id,
@@ -362,6 +371,14 @@ async function main() {
     console.log(`- Assets: ${await prisma.asset.count()}`);
     console.log(`- Requests: ${await prisma.request.count()}`);
     console.log(`- Tickets: ${await prisma.ticket.count()}`);
+    
+    console.log("\n🔐 Initial Passwords (Save these, they are randomly generated and not stored!):");
+    console.log(`  Dean: ${passwords.dean}`);
+    console.log(`  Admin: ${passwords.admin}`);
+    console.log(`  CSE HOD: ${passwords.cseHod}`);
+    console.log(`  ECE HOD: ${passwords.eceHod}`);
+    console.log(`  Lab Incharge 1: ${passwords.labIncharge1}`);
+    console.log(`  Lab Incharge 2: ${passwords.labIncharge2}`);
 }
 
 main()

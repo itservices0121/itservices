@@ -62,36 +62,31 @@ export async function PUT(
         }
 
         const body = await req.json();
-        const { password, ...updateData } = body;
+        
+        // Whitelist fields
+        const { name, email, image, role, departmentId, password } = body;
+        
+        const updateData: any = {};
+        if (name !== undefined) updateData.name = name;
+        if (email !== undefined) updateData.email = email;
+        if (image !== undefined) updateData.image = image;
+
+        if (role !== undefined || departmentId !== undefined) {
+            if (!isAdmin) {
+                return NextResponse.json({ error: "Forbidden: Only ADMIN or DEAN can update role or departmentId" }, { status: 403 });
+            }
+            if (role !== undefined) updateData.role = role;
+            if (departmentId !== undefined) updateData.departmentId = departmentId;
+        }
 
         if (password) {
             updateData.password = await hash(password, 10);
         }
 
-        let user;
-        try {
-            user = await prisma.user.update({
-                where: { id },
-                data: updateData as any
-            });
-        } catch (updateError) {
-            console.warn("Prisma update failed, attempting raw SQL fallback...");
-            const fields = Object.keys(updateData);
-            const setClause = fields.map((f, i) => `"${f}" = $${i + 2}`).join(", ");
-            const values = Object.values(updateData);
-
-            await prisma.$executeRawUnsafe(
-                `UPDATE "User" SET ${setClause}, "updatedAt" = NOW() WHERE "id" = $1`,
-                id,
-                ...values
-            );
-
-            user = await prisma.user.findUnique({ where: { id } });
-        }
-
-        if (!user) {
-            return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
-        }
+        const user = await prisma.user.update({
+            where: { id },
+            data: updateData
+        });
 
         const { password: _, ...rest } = user as any;
         return NextResponse.json(rest);

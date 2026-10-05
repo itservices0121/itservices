@@ -276,6 +276,25 @@ export default function TicketsPage() {
                 isOpen={showCreateModal}
                 onClose={() => setShowCreateModal(false)}
                 onSuccess={refreshData}
+                onSubmit={async (data) => {
+                    const res = await fetch("/api/tickets", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            title: data.title,
+                            description: data.description,
+                            issueType: data.category,
+                            priority: data.priority,
+                            departmentId: session?.user?.departmentId,
+                            labId: session?.user?.labId,
+                            // assetId is not provided by the current modal fields, passing null/undefined is fine
+                        })
+                    });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.error || "Failed to create ticket");
+                    }
+                }}
             />
         </div>
     );

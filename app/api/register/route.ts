@@ -16,7 +16,32 @@ const userSchema = z.object({
     departmentName: z.string().optional(),
 });
 
+const rateLimit = new Map<string, { count: number, resetAt: number }>();
+
+const rateLimiter = (req: Request) => {
+    const ip = req.headers.get("x-forwarded-for") || "unknown";
+    const now = Date.now();
+    const record = rateLimit.get(ip);
+    
+    if (record) {
+        if (now > record.resetAt) {
+            rateLimit.set(ip, { count: 1, resetAt: now + 60000 });
+            return null;
+        }
+        if (record.count >= 5) {
+            return NextResponse.json({ message: "Too Many Requests" }, { status: 429 });
+        }
+        record.count += 1;
+        return null;
+    }
+    rateLimit.set(ip, { count: 1, resetAt: now + 60000 });
+    return null;
+};
+
 export async function POST(req: Request) {
+    const limit = rateLimiter(req);
+    if (limit) return limit;
+    
     try {
         const session = await getServerSession(authOptions);
         const body = await req.json();
@@ -102,6 +127,13 @@ export async function POST(req: Request) {
                     }
                 });
                 finalDeptId = newDept.id;
+            }
+        }
+
+        if (finalDeptId) {
+            const deptExists = await db.department.findUnique({ where: { id: finalDeptId } });
+            if (!deptExists) {
+                return NextResponse.json({ message: "Invalid department ID" }, { status: 400 });
             }
         }
 

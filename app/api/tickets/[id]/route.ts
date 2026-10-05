@@ -26,11 +26,24 @@ export async function PATCH(
             data.resolvedAt = new Date();
         }
 
-        // Fetch current ticket to get dept/lab for logging
+        // Fetch current ticket to get dept/lab for logging and to check permissions
         const currentTicket = await prisma.ticket.findUnique({
             where: { id },
-            select: { departmentId: true, labId: true, ticketNumber: true }
+            select: { departmentId: true, labId: true, ticketNumber: true, createdById: true, assignedToId: true }
         });
+
+        if (!currentTicket) {
+            return NextResponse.json({ error: "Ticket not found" }, { status: 404 });
+        }
+
+        // Role check: only ADMIN, or the ticket's createdById/assignedToId user, may PATCH.
+        if (
+            session.user.role !== "ADMIN" &&
+            session.user.id !== currentTicket.createdById &&
+            session.user.id !== currentTicket.assignedToId
+        ) {
+            return NextResponse.json({ error: "Forbidden: Insufficient permissions to update this ticket" }, { status: 403 });
+        }
 
         const ticket = await prisma.ticket.update({
             where: { id },

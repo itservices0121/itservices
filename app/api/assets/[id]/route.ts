@@ -49,9 +49,40 @@ export async function PUT(
         }
 
         const body = await req.json();
+        const {
+            assetNumber, name, type, category, brand, model, serialNumber,
+            macAddress, specifications, purchaseDate, purchasePrice,
+            warrantyExpiry, processor, ram, hdd, status, condition,
+            assignment, departmentId, labId, location, notes
+        } = body;
+        
+        const updateData: any = {};
+        if (assetNumber !== undefined) updateData.assetNumber = assetNumber;
+        if (name !== undefined) updateData.name = name;
+        if (type !== undefined) updateData.type = type;
+        if (category !== undefined) updateData.category = category;
+        if (brand !== undefined) updateData.brand = brand;
+        if (model !== undefined) updateData.model = model;
+        if (serialNumber !== undefined) updateData.serialNumber = serialNumber;
+        if (macAddress !== undefined) updateData.macAddress = macAddress;
+        if (specifications !== undefined) updateData.specifications = specifications;
+        if (purchaseDate !== undefined) updateData.purchaseDate = purchaseDate;
+        if (purchasePrice !== undefined) updateData.purchasePrice = purchasePrice;
+        if (warrantyExpiry !== undefined) updateData.warrantyExpiry = warrantyExpiry;
+        if (processor !== undefined) updateData.processor = processor;
+        if (ram !== undefined) updateData.ram = ram;
+        if (hdd !== undefined) updateData.hdd = hdd;
+        if (status !== undefined) updateData.status = status;
+        if (condition !== undefined) updateData.condition = condition;
+        if (assignment !== undefined) updateData.assignment = assignment;
+        if (departmentId !== undefined) updateData.departmentId = departmentId;
+        if (labId !== undefined) updateData.labId = labId;
+        if (location !== undefined) updateData.location = location;
+        if (notes !== undefined) updateData.notes = notes;
+
         const asset = await prisma.asset.update({
             where: { id },
-            data: { ...body }
+            data: updateData
         });
 
         await logActivity({

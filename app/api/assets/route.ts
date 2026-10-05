@@ -24,9 +24,9 @@ export async function GET(req: NextRequest) {
         if (deptId) where.departmentId = deptId;
         if (search) {
             where.OR = [
-                { name: { contains: search } },
-                { assetNumber: { contains: search } },
-                { macAddress: { contains: search } },
+                { name: { contains: search, mode: "insensitive" } },
+                { assetNumber: { contains: search, mode: "insensitive" } },
+                { macAddress: { contains: search, mode: "insensitive" } },
             ];
         }
 
@@ -35,8 +35,16 @@ export async function GET(req: NextRequest) {
             const user = await prisma.user.findUnique({ where: { id: session.user.id } });
             if (user?.departmentId) where.departmentId = user.departmentId;
         } else if (session.user.role === "LAB_INCHARGE") {
-            const user = await prisma.user.findUnique({ where: { id: session.user.id } });
-            if (user?.labId) where.labId = user.labId;
+            const user = await prisma.user.findUnique({ 
+                where: { id: session.user.id },
+                select: { labId: true, managedLab: { select: { id: true } } }
+            });
+            const labIds = [];
+            if (user?.labId) labIds.push(user.labId);
+            if (user?.managedLab?.id) labIds.push(user.managedLab.id);
+            if (labIds.length > 0) {
+                where.labId = { in: labIds };
+            }
         }
 
         const page = parseInt(searchParams.get("page") || "1");
@@ -79,9 +87,21 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
+        
+        // Whitelist fields
+        const {
+            assetNumber, name, type, category, brand, model, serialNumber,
+            macAddress, specifications, purchaseDate, purchasePrice,
+            warrantyExpiry, processor, ram, hdd, status, condition,
+            assignment, departmentId, labId, location, notes
+        } = body;
+        
         const asset = await prisma.asset.create({
             data: {
-                ...body,
+                assetNumber, name, type, category, brand, model, serialNumber,
+                macAddress, specifications, purchaseDate, purchasePrice,
+                warrantyExpiry, processor, ram, hdd, status, condition,
+                assignment, departmentId, labId, location, notes
             },
         });
 

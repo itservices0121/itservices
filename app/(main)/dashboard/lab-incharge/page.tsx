@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useState } from "react";
 import {
     Monitor,
@@ -24,6 +25,7 @@ import { StatCard } from "@/components/dashboard/StatCard";
 const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 export default function LabInchargeDashboard() {
+    const { data: session } = useSession();
     const { data: stats, isLoading: loadingStats } = useSWR("/api/stats", fetcher, { revalidateOnFocus: false });
     const { data: ticketsRaw } = useSWR("/api/tickets", fetcher);
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -215,6 +217,24 @@ export default function LabInchargeDashboard() {
                 onSuccess={() => {
                     mutate("/api/tickets");
                     mutate("/api/stats");
+                }}
+                onSubmit={async (data) => {
+                    const res = await fetch("/api/tickets", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            title: data.title,
+                            description: data.description,
+                            issueType: data.category,
+                            priority: data.priority,
+                            departmentId: session?.user?.departmentId,
+                            labId: session?.user?.labId,
+                        })
+                    });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.error || "Failed to create ticket");
+                    }
                 }}
             />
         </div>

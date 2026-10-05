@@ -713,6 +713,18 @@ function LabsContent() {
                 isOpen={isImportModalOpen}
                 onClose={() => setIsImportModalOpen(false)}
                 onSuccess={fetchLabs}
+                onSubmit={async (file) => {
+                    const formData = new FormData();
+                    formData.append("file", file);
+                    const res = await fetch("/api/labs/import", {
+                        method: "POST",
+                        body: formData
+                    });
+                    if (!res.ok) {
+                        const err = await res.json();
+                        throw new Error(err.error || "Failed to import labs");
+                    }
+                }}
             />
         </div>
     );
