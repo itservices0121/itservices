@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -59,7 +60,7 @@ export async function PATCH(
 
         return NextResponse.json(department);
     } catch (error: any) {
-        console.error("Error updating department:", error);
+        logError("/api/departments/[id]", error);
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { error: "Conflict: A department with this name or code already exists, or the selected HOD is already assigned." },
@@ -129,7 +130,7 @@ export async function DELETE(
 
         return NextResponse.json({ message: "Department decommissioned successfully. Assets returned to allocation pool." });
     } catch (error: any) {
-        console.error("Error deleting department:", error);
+        logError("/api/departments/[id]", error);
         return NextResponse.json({
             error: `Deactivation Critical Failure: ${error.message || "Unknown Database Error"}`
         }, { status: 500 });

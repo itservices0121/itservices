@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { logActivity } from "@/lib/logger";
+import { logActivity, logError } from "@/lib/logger";
 
 export async function PATCH(
     req: NextRequest,
@@ -140,7 +140,7 @@ export async function PATCH(
 
         return NextResponse.json(request);
     } catch (error) {
-        console.error("Error updating request:", error);
+        logError("/api/requests/[id]", error);
         return NextResponse.json(
             { error: "Failed to update request" },
             { status: 500 }

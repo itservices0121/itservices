@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -25,7 +26,7 @@ export async function GET(
 
         return NextResponse.json(lab);
     } catch (error) {
-        console.error("Error fetching lab:", error);
+        logError("/api/labs/[id]", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -78,7 +79,7 @@ export async function PUT(
 
         return NextResponse.json(lab);
     } catch (error: any) {
-        console.error("Error updating lab:", error);
+        logError("/api/labs/[id]", error);
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { error: "A laboratory with this specific configuration code already exists." },
@@ -104,7 +105,7 @@ export async function DELETE(
 
         return NextResponse.json({ message: "Lab deleted successfully" });
     } catch (error) {
-        console.error("Error deleting lab:", error);
+        logError("/api/labs/[id]", error);
         return NextResponse.json({ error: "Failed to delete lab" }, { status: 500 });
     }
 }

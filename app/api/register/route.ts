@@ -5,7 +5,7 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { logActivity } from "@/lib/logger";
+import { logActivity, logError } from "@/lib/logger";
 
 const userSchema = z.object({
     name: z.string().min(1, "Name is required"),
@@ -188,7 +188,7 @@ export async function POST(req: Request) {
             { status: 201 }
         );
     } catch (error: any) {
-        console.error("Registration error:", error);
+        logError("/api/register", error);
         if (error instanceof z.ZodError) {
             return NextResponse.json({ message: error.issues[0].message }, { status: 400 });
         }

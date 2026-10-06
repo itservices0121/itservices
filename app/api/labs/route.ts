@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(labs);
     } catch (error) {
-        console.error("Error fetching labs:", error);
+        logError("/api/labs", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -71,7 +72,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(lab, { status: 201 });
     } catch (error: any) {
-        console.error("Error creating lab:", error);
+        logError("/api/labs", error);
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { error: "A lab with this code already exists. Please check the deployment nomenclature." },

@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextResponse } from "next/server";
 
 export async function GET() {
@@ -76,7 +77,7 @@ export async function GET() {
 
         return NextResponse.json({ policy: policyParagraphs });
     } catch (error) {
-        console.error("Policy fetch error:", error);
+        logError("/api/policy", error);
         return NextResponse.json(
             { error: "Unable to load the latest policy at this moment." },
             { status: 500 }

@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
             { status: 200 }
         );
     } catch (error) {
-        console.error("Failed to sync sheet:", error);
+        logError("/api/assets/sync-sheet", error);
         return NextResponse.json(
             { error: "Failed to sync with Google Sheets" },
             { status: 500 }

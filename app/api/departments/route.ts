@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(departments);
     } catch (error) {
-        console.error("Error fetching departments:", error);
+        logError("/api/departments", error);
         return NextResponse.json(
             { error: "Failed to fetch departments" },
             { status: 500 }
@@ -100,7 +101,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(department, { status: 201 });
     } catch (error: any) {
-        console.error("Error creating department:", error);
+        logError("/api/departments", error);
 
         // Handle Prisma unique constraint errors
         if (error.code === 'P2002') {

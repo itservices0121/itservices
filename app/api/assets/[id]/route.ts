@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { logActivity } from "@/lib/logger";
+import { logActivity, logError } from "@/lib/logger";
 
 // GET /api/assets/[id] - Get individual asset
 export async function GET(
@@ -31,7 +31,7 @@ export async function GET(
 
         return NextResponse.json(asset);
     } catch (error) {
-        console.error("Error fetching asset:", error);
+        logError("/api/assets/[id]", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -95,7 +95,7 @@ export async function PUT(
 
         return NextResponse.json(asset);
     } catch (error) {
-        console.error("Error updating asset:", error);
+        logError("/api/assets/[id]", error);
         return NextResponse.json({ error: "Failed to update asset" }, { status: 500 });
     }
 }
@@ -129,7 +129,7 @@ export async function DELETE(
 
         return NextResponse.json({ message: "Asset deleted successfully" });
     } catch (error) {
-        console.error("Error deleting asset:", error);
+        logError("/api/assets/[id]", error);
         return NextResponse.json({ error: "Failed to delete asset" }, { status: 500 });
     }
 }

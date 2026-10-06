@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -42,7 +43,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(users);
     } catch (error) {
-        console.error("Error fetching users:", error);
+        logError("/api/users", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -83,7 +84,7 @@ export async function POST(req: NextRequest) {
         const { password: _, ...rest } = user;
         return NextResponse.json(rest, { status: 201 });
     } catch (error) {
-        console.error("Error creating user:", error);
+        logError("/api/users", error);
         return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
     }
 }

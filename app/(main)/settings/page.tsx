@@ -55,12 +55,19 @@ export default function SettingsPage() {
         if (!session?.user?.id) return;
         setLoading(true);
         try {
-            const res = await fetch(`/api/users/${session.user.id}`, {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, image })
-            });
-            if (res.ok) {
+            const [res, imageRes] = await Promise.all([
+                fetch(`/api/users/${session.user.id}`, {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ name, email })
+                }),
+                fetch(`/api/users/${session.user.id}/image`, {
+                    method: "PATCH",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ image })
+                })
+            ]);
+            if (res.ok && imageRes.ok) {
                 // Update the session state with small payload to avoid cookie size errors
                 await update({ name, email, image: !!image });
                 setSaved(true);

@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -22,7 +23,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(requests);
     } catch (error) {
-        console.error("Error fetching inventory requests:", error);
+        logError("/api/inventory/requests", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -72,7 +73,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(request, { status: 201 });
     } catch (error) {
-        console.error("Error creating inventory request:", error);
+        logError("/api/inventory/requests", error);
         return NextResponse.json({ error: "Failed to create inventory request" }, { status: 500 });
     }
 }

@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { logActivity } from "@/lib/logger";
+import { logActivity, logError } from "@/lib/logger";
 
 // GET /api/tickets - Get tickets based on role
 export async function GET(req: NextRequest) {
@@ -100,7 +100,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(tickets);
     } catch (error) {
-        console.error("Error fetching tickets:", error);
+        logError("/api/tickets", error);
         return NextResponse.json(
             { error: "Failed to fetch tickets" },
             { status: 500 }
@@ -167,7 +167,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(ticket, { status: 201 });
     } catch (error) {
-        console.error("Error creating ticket:", error);
+        logError("/api/tickets", error);
         return NextResponse.json(
             { error: "Failed to create ticket" },
             { status: 500 }

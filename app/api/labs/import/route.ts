@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -66,7 +67,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json({ message: `Successfully imported ${created.count} labs` }, { status: 201 });
     } catch (error) {
-        console.error("Error importing labs:", error);
+        logError("/api/labs/import", error);
         return NextResponse.json({ error: "Failed to import labs" }, { status: 500 });
     }
 }

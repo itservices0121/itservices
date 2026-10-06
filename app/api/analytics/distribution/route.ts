@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -34,7 +35,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(distribution);
     } catch (error) {
-        console.error("Error fetching distribution stats:", error);
+        logError("/api/analytics/distribution", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }

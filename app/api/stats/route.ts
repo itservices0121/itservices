@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -17,33 +18,8 @@ export async function GET(req: NextRequest) {
 
         // Dean - Global stats
         if (role === "DEAN") {
-            // Fetch totalSystems from Google Sheet (row count = number of assets)
-            // Sheet: https://docs.google.com/spreadsheets/d/1L3nDM3eFbhRUYct5nwihRGXLOUj5qPzL6pGwscHCdWI
-            let totalSystems = 0;
-
-            try {
-                const sheetRes = await fetch(
-                    "https://docs.google.com/spreadsheets/d/1L3nDM3eFbhRUYct5nwihRGXLOUj5qPzL6pGwscHCdWI/export?format=csv",
-                    { cache: 'no-store' }
-                );
-                const text = await sheetRes.text();
-
-                if (!text.toLowerCase().includes("<!doctype html>")) {
-                    // Count data rows (exclude header row)
-                    const lines = text.split("\n").map(l => l.trim()).filter(l => l !== "");
-                    totalSystems = lines.length > 1 ? lines.length - 1 : 0;
-                } else {
-                    console.error("Google Sheet returned HTML — ensure the sheet is published publicly.");
-                    // Fallback to database count
-                    totalSystems = 0;
-                }
-            } catch (error) {
-                console.error("Error fetching from Google Sheets:", error);
-                totalSystems = 0;
-            }
-
-            // Ready for Use, Service, Priority come from the database
             const [
+                totalSystems,
                 workingSystems,
                 underMaintenanceCount,
                 damagedCount,
@@ -52,6 +28,7 @@ export async function GET(req: NextRequest) {
                 labs,
                 pendingRequests,
             ] = await Promise.all([
+                prisma.asset.count(),
                 prisma.asset.count({ where: { status: "ACTIVE" } }),
                 prisma.asset.count({ where: { status: "UNDER_MAINTENANCE" } }),
                 prisma.asset.count({ where: { status: "DAMAGED" } }),
@@ -220,7 +197,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json({ error: "Invalid role" }, { status: 400 });
     } catch (error) {
-        console.error("Error fetching stats:", error);
+        logError("/api/stats", error);
         return NextResponse.json(
             { error: "Failed to fetch statistics" },
             { status: 500 }

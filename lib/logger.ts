@@ -1,5 +1,10 @@
 import { prisma } from "./db";
 
+export function logError(route: string, error: unknown) {
+    const detail = error instanceof Error ? error.message : String(error);
+    console.error(`[${new Date().toISOString()}] ERROR in ${route}:`, detail);
+}
+
 export async function logActivity({
     userId,
     action,

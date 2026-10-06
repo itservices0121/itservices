@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { logActivity } from "@/lib/logger";
+import { logActivity, logError } from "@/lib/logger";
 
 // GET /api/requests - Get requests based on role
 export async function GET(req: NextRequest) {
@@ -88,7 +88,7 @@ export async function GET(req: NextRequest) {
 
         return NextResponse.json(requests);
     } catch (error) {
-        console.error("Error fetching requests:", error);
+        logError("/api/requests", error);
         return NextResponse.json(
             { error: "Failed to fetch requests" },
             { status: 500 }
@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(request, { status: 201 });
     } catch (error) {
-        console.error("Error creating request:", error);
+        logError("/api/requests", error);
         return NextResponse.json(
             { error: "Failed to create request" },
             { status: 500 }

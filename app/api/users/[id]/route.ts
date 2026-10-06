@@ -1,3 +1,4 @@
+import { logError } from "@/lib/logger";
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
@@ -36,7 +37,7 @@ export async function GET(
 
         return NextResponse.json(user);
     } catch (error) {
-        console.error("Error fetching user:", error);
+        logError("/api/users/[id]", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -91,7 +92,7 @@ export async function PUT(
         const { password: _, ...rest } = user as any;
         return NextResponse.json(rest);
     } catch (error) {
-        console.error("Error updating user:", error);
+        logError("/api/users/[id]", error);
         return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
     }
 }
@@ -148,7 +149,7 @@ export async function DELETE(
 
         return NextResponse.json({ message: "User deleted successfully" });
     } catch (error) {
-        console.error("Error deleting user:", error);
+        logError("/api/users/[id]", error);
         return NextResponse.json({ error: "Failed to delete user" }, { status: 500 });
     }
 }

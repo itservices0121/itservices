@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { logActivity } from "@/lib/logger";
+import { logActivity, logError } from "@/lib/logger";
 
 // PATCH /api/tickets/[id] - Update ticket status/resolution
 export async function PATCH(
@@ -62,7 +62,7 @@ export async function PATCH(
 
         return NextResponse.json(ticket);
     } catch (error) {
-        console.error("Error updating ticket:", error);
+        logError("/api/tickets/[id]", error);
         return NextResponse.json({ error: "Failed to update ticket" }, { status: 500 });
     }
 }

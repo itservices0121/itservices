@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { logActivity } from "@/lib/logger";
+import { logActivity, logError } from "@/lib/logger";
 
 // GET /api/assets - List assets with filters
 export async function GET(req: NextRequest) {
@@ -73,7 +73,7 @@ export async function GET(req: NextRequest) {
             totalPages: Math.ceil(total / limit)
         });
     } catch (error) {
-        console.error("Error fetching assets:", error);
+        logError("/api/assets", error);
         return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
     }
 }
@@ -117,7 +117,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(asset, { status: 201 });
     } catch (error: any) {
-        console.error("Error creating asset:", error);
+        logError("/api/assets", error);
         if (error.code === 'P2002') {
             return NextResponse.json({ error: "An asset with this System Code already exists." }, { status: 409 });
         }
