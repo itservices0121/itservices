@@ -3,6 +3,16 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { logActivity, logError } from "@/lib/logger";
+import { z } from "zod";
+
+const patchRequestSchema = z.object({
+    status: z.string().optional(),
+    remarks: z.string().optional(),
+    assignedAdminId: z.string().optional(),
+    labCode: z.string().optional(),
+    labCapacity: z.union([z.string(), z.number()]).optional(),
+    labLocation: z.string().optional(),
+});
 
 export async function PATCH(
     req: NextRequest,
@@ -17,6 +27,7 @@ export async function PATCH(
         }
 
         const body = await req.json();
+        patchRequestSchema.parse(body);
         const { status, remarks, assignedAdminId } = body;
 
         const updateData: any = {
@@ -139,8 +150,11 @@ export async function PATCH(
         });
 
         return NextResponse.json(request);
-    } catch (error) {
+    } catch (error: any) {
         logError("/api/requests/[id]", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         return NextResponse.json(
             { error: "Failed to update request" },
             { status: 500 }

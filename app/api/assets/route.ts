@@ -3,6 +3,32 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { logActivity, logError } from "@/lib/logger";
+import { z } from "zod";
+
+const createAssetSchema = z.object({
+    assetNumber: z.string().min(1, "Asset number is required"),
+    name: z.string().min(1, "Name is required"),
+    type: z.string().min(1, "Type is required"),
+    departmentId: z.string().min(1, "Department is required"),
+    category: z.string().optional(),
+    brand: z.string().optional(),
+    model: z.string().optional(),
+    serialNumber: z.string().optional(),
+    macAddress: z.string().optional(),
+    specifications: z.string().optional(),
+    purchaseDate: z.string().optional(),
+    purchasePrice: z.number().optional(),
+    warrantyExpiry: z.string().optional(),
+    processor: z.string().optional(),
+    ram: z.string().optional(),
+    hdd: z.string().optional(),
+    status: z.string().optional(),
+    condition: z.string().optional(),
+    assignment: z.string().optional(),
+    labId: z.string().nullable().optional(),
+    location: z.string().optional(),
+    notes: z.string().optional(),
+});
 
 // GET /api/assets - List assets with filters
 export async function GET(req: NextRequest) {
@@ -87,14 +113,12 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        
-        // Whitelist fields
         const {
             assetNumber, name, type, category, brand, model, serialNumber,
             macAddress, specifications, purchaseDate, purchasePrice,
             warrantyExpiry, processor, ram, hdd, status, condition,
             assignment, departmentId, labId, location, notes
-        } = body;
+        } = createAssetSchema.parse(body);
         
         const asset = await prisma.asset.create({
             data: {
@@ -102,7 +126,7 @@ export async function POST(req: NextRequest) {
                 macAddress, specifications, purchaseDate, purchasePrice,
                 warrantyExpiry, processor, ram, hdd, status, condition,
                 assignment, departmentId, labId, location, notes
-            },
+            } as any,
         });
 
         await logActivity({
@@ -118,6 +142,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(asset, { status: 201 });
     } catch (error: any) {
         logError("/api/assets", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         if (error.code === 'P2002') {
             return NextResponse.json({ error: "An asset with this System Code already exists." }, { status: 409 });
         }

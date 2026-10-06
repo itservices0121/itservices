@@ -5,6 +5,16 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import bcryptjs from "bcryptjs";
 const { hash } = bcryptjs;
+import { z } from "zod";
+
+const updateUserSchema = z.object({
+    name: z.string().min(1).optional(),
+    email: z.string().email("Invalid email").optional(),
+    image: z.string().nullable().optional(),
+    role: z.enum(["USER", "HOD", "LAB_INCHARGE", "ADMIN", "DEAN"]).optional(),
+    departmentId: z.string().nullable().optional(),
+    password: z.string().min(8, "Password must be at least 8 characters").optional(),
+});
 
 // GET /api/users/[id]
 export async function GET(
@@ -63,9 +73,7 @@ export async function PUT(
         }
 
         const body = await req.json();
-        
-        // Whitelist fields
-        const { name, email, image, role, departmentId, password } = body;
+        const { name, email, image, role, departmentId, password } = updateUserSchema.parse(body);
         
         const updateData: any = {};
         if (name !== undefined) updateData.name = name;
@@ -91,8 +99,11 @@ export async function PUT(
 
         const { password: _, ...rest } = user as any;
         return NextResponse.json(rest);
-    } catch (error) {
+    } catch (error: any) {
         logError("/api/users/[id]", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         return NextResponse.json({ error: "Failed to update user" }, { status: 500 });
     }
 }

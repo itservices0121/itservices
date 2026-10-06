@@ -7,7 +7,7 @@ const handler = NextAuth(authOptions);
 const rateLimit = new Map<string, { count: number, resetAt: number }>();
 
 const rateLimiter = (req: NextRequest) => {
-    const ip = req.headers.get("x-forwarded-for") || req.ip || "unknown";
+    const ip = req.headers.get("x-forwarded-for") ?? "unknown";
     const now = Date.now();
     const record = rateLimit.get(ip);
     

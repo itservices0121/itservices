@@ -100,6 +100,7 @@ Each role has unique features and permissions
 1. Raise a request (e.g., "New System Allocation")
 2. Wait for Dean approval
 3. Track status: Pending → Approved → Assigned → Completed
+4. Review and approve service tickets from Lab Incharges in their department
 
 ### 🧑💻 **ADMIN (IT Support)**
 **Can:**
@@ -125,7 +126,7 @@ Each role has unique features and permissions
 **Workflow:**
 1. Identify system issue
 2. Raise ticket with details
-3. Track: Submitted → Approved → Processing → Resolved
+3. Track: Submitted → HOD Approved → Processing → Resolved
 
 ---
 
@@ -134,13 +135,14 @@ Each role has unique features and permissions
 ```
 Lab Incharge: "Monitor not working on PC12"
     ↓ (Raises Ticket)
-HOD: Reviews ticket from their department
-    ↓ (Forwards to Dean)
-Dean: Approves and assigns to Admin
-    ↓ (Assigns)
+HOD: Reviews and approves ticket from their department
+    ↓ (Approves — SUBMITTED → APPROVED)
 Admin: Processes ticket (Queued → Processing → Deployed)
     ↓ (Completes)
 Lab Incharge: Receives notification - Issue Resolved ✅
+
+Note: Dean does NOT participate in the ticket workflow.
+Dean's approval role is for HOD Resource Requests only.
 ```
 
 ---

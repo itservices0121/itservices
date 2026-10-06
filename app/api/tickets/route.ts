@@ -3,6 +3,17 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { logActivity, logError } from "@/lib/logger";
+import { z } from "zod";
+
+const createTicketSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().min(1, "Description is required"),
+    issueType: z.string().min(1, "Issue type is required"),
+    departmentId: z.string().min(1, "Department is required"),
+    priority: z.string().optional(),
+    assetId: z.string().nullable().optional(),
+    labId: z.string().nullable().optional(),
+});
 
 // GET /api/tickets - Get tickets based on role
 export async function GET(req: NextRequest) {
@@ -118,14 +129,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { title, description, issueType, priority, assetId, departmentId, labId } = body;
-
-        if (!title || !description || !issueType || !departmentId) {
-            return NextResponse.json(
-                { error: "Missing required fields" },
-                { status: 400 }
-            );
-        }
+        const { title, description, issueType, priority, assetId, departmentId, labId } = createTicketSchema.parse(body);
 
         // Generate ticket number safely without collision
         const randomStr = typeof crypto !== 'undefined' && crypto.randomUUID 
@@ -138,8 +142,8 @@ export async function POST(req: NextRequest) {
                 ticketNumber,
                 title,
                 description,
-                issueType,
-                priority: priority || "NORMAL",
+                issueType: issueType as any,
+                priority: (priority || "NORMAL") as any,
                 assetId: assetId || null,
                 departmentId,
                 labId: labId || null,
@@ -166,8 +170,11 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(ticket, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         logError("/api/tickets", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         return NextResponse.json(
             { error: "Failed to create ticket" },
             { status: 500 }

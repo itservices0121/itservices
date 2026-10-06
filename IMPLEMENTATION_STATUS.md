@@ -119,9 +119,12 @@
 
 ### Workflows:
 ```
-Lab Incharge → Ticket → HOD (Review) → Dean (Approve) → Admin (Execute)
+Lab Incharge → Ticket → HOD (Approve) → Admin (Execute)
 HOD → Request → Dean (Approve) → Admin (Assign)
 ```
+
+> **Note:** Dean does NOT approve tickets. Dean only approves HOD Resource Requests.
+> Ticket approval is HOD's responsibility within their own department.
 
 ---
 

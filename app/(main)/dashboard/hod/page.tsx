@@ -12,7 +12,8 @@ import {
     ArrowRight,
     ClipboardList,
     ChevronRight,
-    Loader2
+    Loader2,
+    Ticket
 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import { Modal } from "@/components/ui/modal";
@@ -32,13 +33,17 @@ export default function HODDashboard() {
     const { data: requestsRaw, mutate: mutateRequests } = useSWR("/api/requests", fetcher);
     const { data: labsRaw, mutate: mutateLabs } = useSWR("/api/labs", fetcher, { revalidateOnFocus: false });
     const { data: usersRaw } = useSWR("/api/users?role=LAB_INCHARGE", fetcher, { revalidateOnFocus: false });
+    const { data: ticketsRaw, mutate: mutateTickets } = useSWR("/api/tickets", fetcher, { revalidateOnFocus: false });
 
     const requests = Array.isArray(requestsRaw) ? requestsRaw : [];
     const labs = Array.isArray(labsRaw) ? labsRaw : [];
     const users = Array.isArray(usersRaw) ? usersRaw : [];
+    const tickets = Array.isArray(ticketsRaw) ? ticketsRaw : [];
     const loading = loadingStats;
 
     const [showHistory, setShowHistory] = useState(false);
+    const [showAllTickets, setShowAllTickets] = useState(false);
+    const [approvingTicketId, setApprovingTicketId] = useState<string | null>(null);
 
     // Modals
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
@@ -107,6 +112,27 @@ export default function HODDashboard() {
             console.error("Failed to assign incharge", error);
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const handleApproveTicket = async (ticketId: string) => {
+        setApprovingTicketId(ticketId);
+        try {
+            const res = await fetch(`/api/tickets/${ticketId}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status: "APPROVED" })
+            });
+            if (res.ok) {
+                await mutateTickets();
+            } else {
+                const err = await res.json();
+                alert(`Failed to approve: ${err.error || "Unknown error"}`);
+            }
+        } catch (error) {
+            console.error("Failed to approve ticket", error);
+        } finally {
+            setApprovingTicketId(null);
         }
     };
 
@@ -284,6 +310,89 @@ export default function HODDashboard() {
                 </div>
             </div>
 
+            {/* Pending Tickets — HOD approval queue */}
+            <div id="ticket-queue" className="scroll-mt-10 space-y-4 bg-card border border-border rounded-xl p-6 shadow-sm">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-primary/10 rounded-lg">
+                            <Ticket className="h-5 w-5 text-primary" aria-hidden="true" />
+                        </div>
+                        <div>
+                            <h2 className="text-base font-semibold text-foreground">Service Tickets</h2>
+                            <p className="text-xs text-muted-foreground mt-0.5">Approve tickets from your department</p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={() => setShowAllTickets(!showAllTickets)}
+                        className="px-3 py-1.5 bg-muted hover:bg-muted/80 text-muted-foreground text-xs font-medium rounded-lg flex items-center gap-2 transition-colors border border-border"
+                    >
+                        {showAllTickets ? "Pending Only" : "Show All"}
+                        <ArrowRight className={cn("h-3.5 w-3.5 transition-transform", showAllTickets && "rotate-90")} aria-hidden="true" />
+                    </button>
+                </div>
+
+                <div className="space-y-2">
+                    {tickets
+                        .filter((t: any) => showAllTickets ? true : t.status === "SUBMITTED")
+                        .slice(0, 10)
+                        .map((ticket: any) => (
+                            <div
+                                key={ticket.id}
+                                className="p-4 bg-background rounded-lg border border-border flex items-center justify-between group hover:shadow-md hover:border-border/80 transition-all"
+                            >
+                                <div className="flex items-center gap-3">
+                                    <div className={`h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                        ticket.status === "APPROVED" || ticket.status === "RESOLVED" ? "bg-green-50 text-green-600 border border-green-100" :
+                                        ticket.status === "CLOSED" ? "bg-red-50 text-red-600 border border-red-100" :
+                                        "bg-orange-50 text-orange-600 border border-orange-100"
+                                    }`}>
+                                        {ticket.status === "APPROVED" || ticket.status === "RESOLVED"
+                                            ? <CheckCircle2 className="h-5 w-5" aria-hidden="true" />
+                                            : <Clock className="h-5 w-5" aria-hidden="true" />}
+                                    </div>
+                                    <div>
+                                        <h4 className="font-medium text-foreground text-sm">{ticket.title}</h4>
+                                        <p className="text-muted-foreground text-xs mt-0.5 flex items-center gap-1.5">
+                                            <span className="px-1.5 py-0.5 bg-muted rounded">{ticket.ticketNumber}</span>
+                                            <span>·</span>
+                                            <span>{ticket.issueType}</span>
+                                            <span>·</span>
+                                            <span>{new Date(ticket.createdAt).toLocaleDateString()}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
+                                        ticket.status === "SUBMITTED" ? "bg-orange-100 text-orange-700" :
+                                        ticket.status === "APPROVED" ? "bg-green-100 text-green-700" :
+                                        "bg-muted text-muted-foreground"
+                                    }`}>
+                                        {ticket.status}
+                                    </span>
+                                    {ticket.status === "SUBMITTED" && (
+                                        <button
+                                            id={`approve-ticket-${ticket.id}`}
+                                            onClick={() => handleApproveTicket(ticket.id)}
+                                            disabled={approvingTicketId === ticket.id}
+                                            className="flex items-center gap-1.5 px-3 py-1.5 bg-primary text-primary-foreground text-xs font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 transition-colors"
+                                        >
+                                            {approvingTicketId === ticket.id
+                                                ? <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                                                : <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />}
+                                            Approve
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    {tickets.filter((t: any) => showAllTickets ? true : t.status === "SUBMITTED").length === 0 && (
+                        <div className="py-10 text-center text-muted-foreground text-sm">
+                            No {showAllTickets ? "" : "pending "}tickets in your department
+                        </div>
+                    )}
+                </div>
+            </div>
+
             {/* Raise Request Modal */}
             <Modal
                 isOpen={isRequestModalOpen}
@@ -429,7 +538,7 @@ export default function HODDashboard() {
                                 )}>
                                     Dean's Remarks
                                 </h4>
-                                <p className="text-sm text-foreground">"{selectedRequest.remarks}"</p>
+                                <p className="text-sm text-foreground">&quot;{selectedRequest.remarks}&quot;</p>
                             </div>
                         )}
 

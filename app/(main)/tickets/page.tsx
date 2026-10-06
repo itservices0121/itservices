@@ -59,12 +59,17 @@ export default function TicketsPage() {
         let finalStatus = unifiedStatus;
         if (isRequest) {
             if (unifiedStatus === "PENDING") finalStatus = "PENDING";
+            if (unifiedStatus === "QUEUED") finalStatus = "PENDING";
             if (unifiedStatus === "IN_PROCESS") finalStatus = "IN_PROGRESS";
+            if (unifiedStatus === "DEPLOYED") finalStatus = "COMPLETED";
             if (unifiedStatus === "RESOLVED") finalStatus = "COMPLETED";
             if (unifiedStatus === "CLOSED") finalStatus = "DECLINED";
         } else {
             if (unifiedStatus === "PENDING") finalStatus = "SUBMITTED";
+            if (unifiedStatus === "APPROVED") finalStatus = "APPROVED";
+            if (unifiedStatus === "QUEUED") finalStatus = "QUEUED";
             if (unifiedStatus === "IN_PROCESS") finalStatus = "PROCESSING";
+            if (unifiedStatus === "DEPLOYED") finalStatus = "DEPLOYED";
             if (unifiedStatus === "RESOLVED") finalStatus = "RESOLVED";
             if (unifiedStatus === "CLOSED") finalStatus = "CLOSED";
         }
@@ -84,8 +89,11 @@ export default function TicketsPage() {
 
     const getUnifiedStatus = (status: string) => {
         if (status === "SUBMITTED" || status === "PENDING") return "PENDING";
-        if (status === "PROCESSING" || status === "QUEUED" || status === "ASSIGNED" || status === "IN_PROGRESS" || status === "IN_PROCESS") return "IN_PROCESS";
-        if (status === "RESOLVED" || status === "DEPLOYED" || status === "COMPLETED") return "RESOLVED";
+        if (status === "APPROVED") return "APPROVED";
+        if (status === "QUEUED") return "QUEUED";
+        if (status === "PROCESSING" || status === "ASSIGNED" || status === "IN_PROGRESS" || status === "IN_PROCESS") return "IN_PROCESS";
+        if (status === "DEPLOYED") return "DEPLOYED";
+        if (status === "RESOLVED" || status === "COMPLETED") return "RESOLVED";
         if (status === "CLOSED" || status === "DECLINED") return "CLOSED";
         return status;
     };
@@ -246,19 +254,39 @@ export default function TicketsPage() {
                                                         {getUnifiedStatus(item.status).replace('_', ' ')}
                                                     </span>
                                                     {session?.user?.role === "ADMIN" && (
+                                                        item.itemCategory === 'TICKET' && item.status === "SUBMITTED" ? (
+                                                            <span className="text-[10px] font-bold text-orange-500 uppercase tracking-widest px-2 py-1.5 border border-orange-200 rounded-lg bg-orange-50">
+                                                                Awaiting HOD Approval
+                                                            </span>
+                                                        ) : (
                                                         <select
                                                             value={getUnifiedStatus(item.status)}
                                                             onChange={(e) => updateStatus(item, e.target.value)}
-                                                            disabled={getUnifiedStatus(item.status) === "RESOLVED" || getUnifiedStatus(item.status) === "CLOSED" || item.type === "ACCOUNT_APPROVAL"}
-                                                            className={`text-[10px] font-black border rounded-lg px-2 py-1.5 uppercase tracking-widest outline-none transition-all ${getUnifiedStatus(item.status) === "RESOLVED" || getUnifiedStatus(item.status) === "CLOSED" || item.type === "ACCOUNT_APPROVAL"
+                                                            disabled={getUnifiedStatus(item.status) === "CLOSED" || item.type === "ACCOUNT_APPROVAL"}
+                                                            className={`text-[10px] font-black border rounded-lg px-2 py-1.5 uppercase tracking-widest outline-none transition-all ${getUnifiedStatus(item.status) === "CLOSED" || item.type === "ACCOUNT_APPROVAL"
                                                                 ? "bg-slate-100 text-slate-400 border-slate-200 cursor-not-allowed"
                                                                 : "text-[#3a5a40] bg-white border-[#a3b18a]/60 focus:ring-2 focus:ring-[#588157] cursor-pointer hover:border-[#a3b18a]/60"
                                                                 }`}
                                                         >
-                                                            <option value="APPROVED">Approved</option>
-                                                            <option value="IN_PROCESS">In Process</option>
-                                                            <option value="RESOLVED">Resolved</option>
+                                                            {getUnifiedStatus(item.status) === "RESOLVED" || getUnifiedStatus(item.status) === "DEPLOYED" ? (
+                                                                <>
+                                                                    <option value="DEPLOYED">Deployed</option>
+                                                                    <option value="RESOLVED">Resolved</option>
+                                                                    <option value="CLOSED">Closed</option>
+                                                                </>
+                                                            ) : getUnifiedStatus(item.status) === "CLOSED" ? (
+                                                                <option value="CLOSED">Closed</option>
+                                                            ) : (
+                                                                <>
+                                                                    <option value="APPROVED">Approved</option>
+                                                                    <option value="QUEUED">Queued</option>
+                                                                    <option value="IN_PROCESS">In Process</option>
+                                                                    <option value="DEPLOYED">Deployed</option>
+                                                                    <option value="RESOLVED">Resolved</option>
+                                                                </>
+                                                            )}
                                                         </select>
+                                                        )
                                                     )}
                                                 </div>
                                             </div>

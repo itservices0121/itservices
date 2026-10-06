@@ -5,6 +5,16 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import bcryptjs from "bcryptjs";
 const { hash } = bcryptjs;
+import { z } from "zod";
+
+const createUserSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    email: z.string().min(1, "Email is required").email("Invalid email"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    role: z.enum(["USER", "HOD", "LAB_INCHARGE", "ADMIN", "DEAN"], { error: "Invalid role" }),
+    departmentId: z.string().optional(),
+    labId: z.string().optional(),
+});
 
 // GET /api/users - List users
 export async function GET(req: NextRequest) {
@@ -57,11 +67,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, email, password, role, departmentId, labId } = body;
-
-        if (!name || !email || !password || !role) {
-            return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-        }
+        const { name, email, password, role, departmentId, labId } = createUserSchema.parse(body);
 
         const existingUser = await prisma.user.findUnique({ where: { email } });
         if (existingUser) {
@@ -83,8 +89,11 @@ export async function POST(req: NextRequest) {
 
         const { password: _, ...rest } = user;
         return NextResponse.json(rest, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         logError("/api/users", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         return NextResponse.json({ error: "Failed to create user" }, { status: 500 });
     }
 }

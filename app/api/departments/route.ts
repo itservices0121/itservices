@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const createDepartmentSchema = z.object({
+    name: z.string().min(1, "Name is required"),
+    code: z.string().min(1, "Code is required"),
+    description: z.string().optional(),
+    hodId: z.string().optional(),
+});
 
 // GET /api/departments - Get all departments
 export async function GET(req: NextRequest) {
@@ -61,14 +69,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { name, code, description, hodId } = body;
-
-        if (!name || !code) {
-            return NextResponse.json(
-                { error: "Name and code are required" },
-                { status: 400 }
-            );
-        }
+        const { name, code, description, hodId } = createDepartmentSchema.parse(body);
 
         // Clean up hodId - if empty string, make it null
         const cleanHodId = hodId && hodId !== "" ? hodId : null;
@@ -102,7 +103,9 @@ export async function POST(req: NextRequest) {
         return NextResponse.json(department, { status: 201 });
     } catch (error: any) {
         logError("/api/departments", error);
-
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         // Handle Prisma unique constraint errors
         if (error.code === 'P2002') {
             const target = error.meta?.target || "Field";

@@ -4,14 +4,17 @@ import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { logError } from "@/lib/logger";
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(
+    req: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
             return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
         }
 
-        const targetUserId = params.id;
+        const { id: targetUserId } = await params;
         
         // A user may only update their own image unless caller is ADMIN/DEAN
         if (session.user.id !== targetUserId && !["ADMIN", "DEAN"].includes(session.user.role)) {

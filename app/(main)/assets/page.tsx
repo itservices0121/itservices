@@ -15,8 +15,7 @@ import {
     ChevronRight,
     Download,
     Trash2,
-    Upload,
-    RefreshCw
+    Upload
 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Modal } from "@/components/ui/modal";
@@ -67,7 +66,6 @@ function AssetsContent() {
     const [totalPages, setTotalPages] = useState(1);
     const [totalCount, setTotalCount] = useState(0);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [isSyncing, setIsSyncing] = useState(false);
     const limit = 10;
 
     useEffect(() => {
@@ -130,25 +128,6 @@ function AssetsContent() {
         }
     };
 
-    const handleSyncSheet = async () => {
-        setIsSyncing(true);
-        try {
-            const res = await fetch("/api/assets/sync-sheet", { method: "POST" });
-            const data = await res.json().catch(() => ({ error: "Malformatted response from server" }));
-
-            if (res.ok) {
-                alert(data.message || "Sync completed successfully");
-                fetchAssets();
-            } else {
-                alert(data.error || "Failed to sync sheet");
-            }
-        } catch (error) {
-            console.error("Sync error:", error);
-            alert("Connection error while syncing");
-        } finally {
-            setIsSyncing(false);
-        }
-    };
 
     const handleDeleteAsset = async (id: string) => {
         if (!confirm("Are you sure you want to delete this asset? This action cannot be undone.")) return;
@@ -337,14 +316,7 @@ function AssetsContent() {
                         <Download className="h-4 w-4" />
                         Export Assets
                     </button>
-                    <button
-                        onClick={handleSyncSheet}
-                        disabled={isSyncing}
-                        className="flex items-center gap-2.5 px-5 py-2.5 bg-[#344e41] text-white font-bold text-xs rounded-xl hover:bg-[#3a5a40] transition-all shadow-lg shadow-[#344e41]/20 disabled:opacity-50"
-                    >
-                        <RefreshCw className={cn("h-4 w-4", isSyncing && "animate-spin")} />
-                        {isSyncing ? "Syncing..." : "Sync from Sheets"}
-                    </button>
+
                 </div>
             </div>
 

@@ -3,6 +3,15 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const updateLabSchema = z.object({
+    name: z.string().min(1).optional(),
+    code: z.string().min(1).optional(),
+    location: z.string().optional(),
+    capacity: z.union([z.string(), z.number()]).optional(),
+    inchargeId: z.string().optional(),
+});
 
 export async function GET(
     req: NextRequest,
@@ -43,6 +52,7 @@ export async function PUT(
         }
 
         const body = await req.json();
+        updateLabSchema.parse(body);
         const { inchargeId, ...otherData } = body;
 
         // Fetch current lab to check department
@@ -80,6 +90,9 @@ export async function PUT(
         return NextResponse.json(lab);
     } catch (error: any) {
         logError("/api/labs/[id]", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { error: "A laboratory with this specific configuration code already exists." },

@@ -3,6 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { z } from "zod";
+
+const patchDepartmentSchema = z.object({
+    name: z.string().min(1).optional(),
+    code: z.string().min(1).optional(),
+    description: z.string().optional(),
+    hodId: z.string().optional(),
+});
 
 // PATCH /api/departments/[id] - Update department
 export async function PATCH(
@@ -18,7 +26,7 @@ export async function PATCH(
         }
 
         const body = await req.json();
-        const { name, code, description, hodId } = body;
+        const { name, code, description, hodId } = patchDepartmentSchema.parse(body);
 
         const cleanHodId = hodId === "" ? null : hodId;
 
@@ -61,6 +69,9 @@ export async function PATCH(
         return NextResponse.json(department);
     } catch (error: any) {
         logError("/api/departments/[id]", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         if (error.code === 'P2002') {
             return NextResponse.json(
                 { error: "Conflict: A department with this name or code already exists, or the selected HOD is already assigned." },

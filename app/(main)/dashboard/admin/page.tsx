@@ -46,6 +46,7 @@ export default function AdminDashboard() {
     const [requestRemarks, setRequestRemarks] = useState("");
     const [isProcessingModalOpen, setIsProcessingModalOpen] = useState(false);
     const [isRequestModalOpen, setIsRequestModalOpen] = useState(false);
+    const [processingInvReqId, setProcessingInvReqId] = useState<string | null>(null);
 
     // Lab Creation Extra Fields (for LAB_SETUP type)
     const [labCode, setLabCode] = useState("");
@@ -81,6 +82,24 @@ export default function AdminDashboard() {
             console.error("Failed to update request:", error);
         } finally {
             setProcessingRequest(false);
+        }
+    };
+
+    const handleInventoryAction = async (id: string, status: "APPROVED" | "DECLINED") => {
+        setProcessingInvReqId(id);
+        try {
+            const res = await fetch(`/api/inventory/requests/${id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ status }),
+            });
+            if (res.ok) {
+                await mutateInventoryReqs();
+            }
+        } catch (error) {
+            console.error("Failed to update inventory request:", error);
+        } finally {
+            setProcessingInvReqId(null);
         }
     };
 
@@ -354,7 +373,6 @@ export default function AdminDashboard() {
                                                             <span className="px-2 py-0.5 rounded text-xs font-medium bg-primary/5 text-primary border border-primary/10">
                                                                 PERIPHERAL
                                                             </span>
-                                                            <span className="text-muted-foreground text-xs font-medium">Sent to Dean</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -365,6 +383,24 @@ export default function AdminDashboard() {
                                                         }`}>
                                                         {request.status}
                                                     </span>
+                                                    {request.status === "PENDING" && (
+                                                        <div className="flex items-center gap-2 mt-1">
+                                                            <button
+                                                                disabled={processingInvReqId === request.id}
+                                                                onClick={() => handleInventoryAction(request.id, "APPROVED")}
+                                                                className="px-2.5 py-1 text-xs font-medium bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 transition-colors"
+                                                            >
+                                                                Approve
+                                                            </button>
+                                                            <button
+                                                                disabled={processingInvReqId === request.id}
+                                                                onClick={() => handleInventoryAction(request.id, "DECLINED")}
+                                                                className="px-2.5 py-1 text-xs font-medium bg-red-600 text-white rounded hover:bg-red-700 disabled:opacity-50 transition-colors"
+                                                            >
+                                                                Decline
+                                                            </button>
+                                                        </div>
+                                                    )}
                                                     {request.status === "APPROVED" && (
                                                         <p className="text-xs font-medium text-muted-foreground">Allocated</p>
                                                     )}

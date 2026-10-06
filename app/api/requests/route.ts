@@ -3,6 +3,15 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { logActivity, logError } from "@/lib/logger";
+import { z } from "zod";
+
+const createRequestSchema = z.object({
+    title: z.string().min(1, "Title is required"),
+    description: z.string().min(1, "Description is required"),
+    type: z.string().min(1, "Request type is required"),
+    departmentId: z.string().min(1, "Department is required"),
+    priority: z.string().optional(),
+});
 
 // GET /api/requests - Get requests based on role
 export async function GET(req: NextRequest) {
@@ -106,14 +115,7 @@ export async function POST(req: NextRequest) {
         }
 
         const body = await req.json();
-        const { title, description, type, priority, departmentId } = body;
-
-        if (!title || !description || !type || !departmentId) {
-            return NextResponse.json(
-                { error: "Missing required fields" },
-                { status: 400 }
-            );
-        }
+        const { title, description, type, priority, departmentId } = createRequestSchema.parse(body);
 
         // Generate request number safely without collision
         const randomStr = typeof crypto !== 'undefined' && crypto.randomUUID 
@@ -126,8 +128,8 @@ export async function POST(req: NextRequest) {
                 requestNumber,
                 title,
                 description,
-                type,
-                priority: priority || "NORMAL",
+                type: type as any,
+                priority: (priority || "NORMAL") as any,
                 departmentId,
                 createdById: session.user.id,
             },
@@ -148,8 +150,11 @@ export async function POST(req: NextRequest) {
         });
 
         return NextResponse.json(request, { status: 201 });
-    } catch (error) {
+    } catch (error: any) {
         logError("/api/requests", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         return NextResponse.json(
             { error: "Failed to create request" },
             { status: 500 }

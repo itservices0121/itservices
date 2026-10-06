@@ -3,6 +3,32 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { logActivity, logError } from "@/lib/logger";
+import { z } from "zod";
+
+const updateAssetSchema = z.object({
+    assetNumber: z.string().min(1).optional(),
+    name: z.string().min(1).optional(),
+    type: z.string().optional(),
+    category: z.string().optional(),
+    brand: z.string().optional(),
+    model: z.string().optional(),
+    serialNumber: z.string().optional(),
+    macAddress: z.string().optional(),
+    specifications: z.string().optional(),
+    purchaseDate: z.string().optional(),
+    purchasePrice: z.number().optional(),
+    warrantyExpiry: z.string().optional(),
+    processor: z.string().optional(),
+    ram: z.string().optional(),
+    hdd: z.string().optional(),
+    status: z.string().optional(),
+    condition: z.string().optional(),
+    assignment: z.string().optional(),
+    departmentId: z.string().optional(),
+    labId: z.string().nullable().optional(),
+    location: z.string().optional(),
+    notes: z.string().optional(),
+});
 
 // GET /api/assets/[id] - Get individual asset
 export async function GET(
@@ -54,7 +80,7 @@ export async function PUT(
             macAddress, specifications, purchaseDate, purchasePrice,
             warrantyExpiry, processor, ram, hdd, status, condition,
             assignment, departmentId, labId, location, notes
-        } = body;
+        } = updateAssetSchema.parse(body);
         
         const updateData: any = {};
         if (assetNumber !== undefined) updateData.assetNumber = assetNumber;
@@ -94,8 +120,11 @@ export async function PUT(
         });
 
         return NextResponse.json(asset);
-    } catch (error) {
+    } catch (error: any) {
         logError("/api/assets/[id]", error);
+        if (error instanceof z.ZodError) {
+            return NextResponse.json({ error: error.issues[0].message }, { status: 400 });
+        }
         return NextResponse.json({ error: "Failed to update asset" }, { status: 500 });
     }
 }
